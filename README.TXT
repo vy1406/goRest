@@ -1,0 +1,1 @@
+install http client extension to visual code in order to run api-tests requests.
