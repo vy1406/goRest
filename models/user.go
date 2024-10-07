@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+	"fmt"
+
 	"example.com/rest/db"
 	"example.com/rest/utils"
 )
@@ -29,6 +32,7 @@ func (u User) Save() error {
 
 	result, err := stmt.Exec(u.Email, hashedPassword)
 
+	fmt.Println(result)
 	if err != nil {
 		return err
 	}
@@ -37,4 +41,25 @@ func (u User) Save() error {
 
 	u.ID = userId
 	return err
+}
+
+func (u User) ValidateCredentials() error {
+
+	query := "SELECT password FROM users WHERE email = ?"
+	row := db.DB.QueryRow(query, u.Email)
+
+	var retrievedPassword string
+	err := row.Scan(&retrievedPassword)
+
+	if err != nil {
+		return err
+	}
+
+	isPasswordValid := utils.ComparePasswords(u.Password, retrievedPassword)
+
+	if !isPasswordValid {
+		return errors.New("Invalid credentials")
+	}
+
+	return nil
 }
